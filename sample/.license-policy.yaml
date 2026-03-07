@@ -1,0 +1,12 @@
+permit:
+  - BSD.*
+  - CC0.*
+  - MIT.*
+  - Apache.*
+  - MPL.*
+  - ISC
+  - WTFPL
+
+ignore-packages:
+  # Format: group:artifact
+  # - "com.example:some-lib"

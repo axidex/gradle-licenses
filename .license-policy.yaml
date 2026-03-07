@@ -1,0 +1,15 @@
+permit:
+  - BSD.*
+  - CC0.*
+  - MIT.*
+  - Apache.*
+  - MPL.*
+  - ISC
+  - WTFPL
+
+ignore-packages:
+  # Format: group:artifact
+  # Add packages with non-standard or missing POM license declarations here.
+  #
+  # Example:
+  # - "com.example:some-lib"   # Apache-2.0, license missing from POM
