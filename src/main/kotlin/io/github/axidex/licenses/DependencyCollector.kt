@@ -8,7 +8,8 @@ internal object DependencyCollector {
 
     fun collect(project: Project): List<DependencyLicense> {
         val seen = mutableSetOf<String>()
-        return project.configurations
+        return (sequenceOf(project) + project.subprojects.asSequence())
+            .flatMap { it.configurations.asSequence() }
             .filter { it.isCanBeResolved }
             .flatMap { config ->
                 try {
@@ -28,5 +29,6 @@ internal object DependencyCollector {
                     null
                 }
             }
+            .toList()
     }
 }
