@@ -13,7 +13,8 @@ object PomLicenseResolver {
         return parseLicenses(pom)
     }
 
-    private fun fetchPom(project: Project, group: String, artifact: String, version: String): File? {
+    // Must be called from the Gradle task execution thread (Gradle-managed thread).
+    internal fun fetchPom(project: Project, group: String, artifact: String, version: String): File? {
         return try {
             val dep = project.dependencies.create("$group:$artifact:$version@pom")
             val config = project.configurations.detachedConfiguration(dep).apply {
@@ -26,7 +27,8 @@ object PomLicenseResolver {
         }
     }
 
-    private fun parseLicenses(pom: File): List<LicenseInfo> {
+    // Pure XML parsing — no Gradle API, safe to call from any thread.
+    internal fun parseLicenses(pom: File): List<LicenseInfo> {
         return try {
             val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pom)
             doc.documentElement.normalize()
