@@ -1,10 +1,12 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.gradle.api.tasks.bundling.Zip
 
 plugins {
     kotlin("jvm") version "2.2.21"
     `java-gradle-plugin`
     id("com.akuleshov7.vercraft.plugin-gradle") version "0.6.0"
     id("com.vanniktech.maven.publish") version "0.30.0"
+    id("me.champeau.jmh") version "0.7.3"
 }
 
 group = "io.github.axidex"
@@ -16,16 +18,15 @@ repositories {
 dependencies {
     implementation(gradleApi())
     implementation("org.yaml:snakeyaml:2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     testImplementation(kotlin("test"))
     testImplementation(gradleTestKit())
 }
 
-gradlePlugin {
-    plugins {
-        create("licenses") {
-            id = "io.github.axidex.licenses"
-            implementationClass = "io.github.axidex.licenses.LicensesPlugin"
-        }
+configure<GradlePluginDevelopmentExtension> {
+    plugins.create("licenses").apply {
+        id = "io.github.axidex.licenses"
+        implementationClass = "io.github.axidex.licenses.LicensesPlugin"
     }
 }
 
@@ -69,4 +70,8 @@ tasks.withType<Sign>().configureEach {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.named<Zip>("jmhJar") {
+    isZip64 = true
 }
