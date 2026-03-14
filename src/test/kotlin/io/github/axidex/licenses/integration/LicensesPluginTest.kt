@@ -1,4 +1,4 @@
-package io.github.axidex.licenses
+package io.github.axidex.licenses.integration
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class LicensesPluginE2ETest {
+class LicensesPluginTest {
 
     @TempDir
     lateinit var projectDir: File
