@@ -29,7 +29,7 @@ class LicensesPluginMultiModuleTest {
         projectDir.resolve("build.gradle.kts").writeText(
             """
             plugins {
-                id("io.github.axidex.licenses")
+                id("io.github.axidex.gradle-licenses")
             }
             repositories { mavenCentral() }
             """.trimIndent(),
@@ -146,7 +146,7 @@ class LicensesPluginMultiModuleTest {
             """
             plugins {
                 java
-                id("io.github.axidex.licenses")
+                id("io.github.axidex.gradle-licenses")
             }
             repositories { mavenCentral() }
             dependencies {

@@ -27,7 +27,7 @@ class LicensesPluginTest {
             """
             plugins {
                 java
-                id("io.github.axidex.licenses")
+                id("io.github.axidex.gradle-licenses")
             }
             repositories { mavenCentral() }
             dependencies {
@@ -176,7 +176,7 @@ class LicensesPluginTest {
             """
             plugins {
                 java
-                id("io.github.axidex.licenses")
+                id("io.github.axidex.gradle-licenses")
             }
             repositories { mavenCentral() }
             """.trimIndent(),
@@ -196,7 +196,7 @@ class LicensesPluginTest {
             """
             plugins {
                 java
-                id("io.github.axidex.licenses")
+                id("io.github.axidex.gradle-licenses")
             }
             repositories { mavenCentral() }
             dependencies {
