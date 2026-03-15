@@ -27,14 +27,15 @@ internal object DependencyCollector {
             }
             .toList()
 
-        // Phase 1: fetch POM files on the Gradle task thread (Gradle API restriction).
-        val idsWithPoms = uniqueIds.map { id ->
-            id to PomLicenseResolver.fetchPom(project, id.group, id.name, id.version)
+        // Phase 1: fetch POM chain on the Gradle task thread (Gradle API restriction).
+        // Follows parent POM links so licenses declared in a BOM/parent are found.
+        val idsWithPomChains = uniqueIds.map { id ->
+            id to PomLicenseResolver.fetchPomChain(project, id.group, id.name, id.version)
         }
 
         // Phase 2: parse XML in parallel — no Gradle API involved.
-        return idsWithPoms.pmap { (id, pom) ->
-            val licenses = if (pom != null) PomLicenseResolver.parseLicenses(pom) else emptyList()
+        return idsWithPomChains.pmap { (id, pomChain) ->
+            val licenses = PomLicenseResolver.parseLicensesFromChain(pomChain)
             DependencyLicense(id.group, id.name, id.version, licenses)
         }
     }
