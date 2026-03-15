@@ -7,6 +7,7 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PomLicenseResolver {
+    const val MAX_DEPTH = 10
 
     // Must be called from the Gradle task execution thread (Gradle-managed thread).
     // Follows the parent POM chain up to maxDepth levels to find license declarations.
@@ -15,11 +16,10 @@ object PomLicenseResolver {
         group: String,
         artifact: String,
         version: String,
-        maxDepth: Int = 4,
     ): List<File> {
         val chain = mutableListOf<File>()
         var g = group; var a = artifact; var v = version
-        repeat(maxDepth) {
+        repeat(MAX_DEPTH) {
             val pom = fetchPom(project, g, a, v) ?: return chain
             chain.add(pom)
             if (parseLicenses(pom).isNotEmpty()) return chain
