@@ -59,7 +59,7 @@ mavenPublishing {
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(11)
 }
 
 // Sign only when GPG key is provided (i.e. in CI), skip for local builds
