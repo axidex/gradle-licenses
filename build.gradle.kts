@@ -18,7 +18,6 @@ repositories {
 dependencies {
     implementation(gradleApi())
     implementation("org.yaml:snakeyaml:2.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     testImplementation(kotlin("test"))
     testImplementation(gradleTestKit())
 }

@@ -1,7 +1,6 @@
 package io.github.axidex.licenses.benchmark
 
 import io.github.axidex.licenses.util.pmap
-import io.github.axidex.licenses.util.pmapExecutor
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Fork
@@ -28,10 +27,6 @@ open class PmapBenchmark {
         items.map { Thread.sleep(10); it }
 
     @Benchmark
-    fun executor(): List<Int> =
-        items.pmapExecutor { Thread.sleep(10); it }
-
-    @Benchmark
-    fun coroutines(): List<Int> =
+    fun parallel(): List<Int> =
         items.pmap { Thread.sleep(10); it }
 }
