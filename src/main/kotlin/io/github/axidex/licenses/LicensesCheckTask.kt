@@ -75,10 +75,10 @@ abstract class LicensesCheckTask : DefaultTask() {
             val dep = result.dependency
             val licenseStr = dep.licenses.joinToString(", ") { it.name }.ifEmpty { "(none)" }
             val (status, label) = when (result) {
-                is CheckResult.Permitted -> "OK      " to licenseStr
                 is CheckResult.Ignored   -> "IGNORED " to "(ignored)"
                 is CheckResult.Forbidden -> "FAIL    " to licenseStr
                 is CheckResult.Unknown   -> "FAIL    " to "(no license info in POM)"
+                else                     -> continue
             }
             println("  ${dep.coordinateWithVersion.padEnd(col1)}${label.padEnd(col2)}$status")
         }
