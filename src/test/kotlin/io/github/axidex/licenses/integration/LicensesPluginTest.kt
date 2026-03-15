@@ -236,6 +236,31 @@ class LicensesPluginTest {
         assertTrue(result.output.contains("Apache"), "Expected Apache license in output")
     }
 
+    // -------------------------------------------------------------------------
+    // licensesCheck — parent POM resolution
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `licensesCheck resolves license from parent POM when own POM has none`() {
+        // jackson-dataformat-yaml has no <licenses> in its own POM, nor in its direct parent
+        // (jackson-dataformats-text). The Apache-2.0 license is declared two levels up in
+        // com.fasterxml.jackson.dataformat:jackson-dataformats-text:2.18.2.
+        setup(
+            policy = """
+                permit:
+                  - Apache.*
+                ignore-packages:
+                  - net.bytebuddy:byte-buddy
+            """.trimIndent(),
+            deps = """implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")""",
+        )
+
+        val result = runner("licensesCheck").build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
+        assertTrue(result.output.contains("OK"), "Expected OK status for jackson-dataformat-yaml")
+    }
+
     companion object {
         private const val DEFAULT_DEPS =
             """implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")"""
