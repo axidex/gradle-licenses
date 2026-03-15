@@ -24,7 +24,7 @@ dependencies {
 
 configure<GradlePluginDevelopmentExtension> {
     plugins.create("licenses").apply {
-        id = "io.github.axidex.licenses"
+        id = "io.github.axidex.gradle-licenses"
         implementationClass = "io.github.axidex.licenses.LicensesPlugin"
     }
 }
