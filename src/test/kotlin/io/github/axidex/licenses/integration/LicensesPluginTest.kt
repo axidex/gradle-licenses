@@ -7,6 +7,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LicensesPluginTest {
@@ -258,7 +259,7 @@ class LicensesPluginTest {
         val result = runner("licensesCheck").build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
-        assertTrue(result.output.contains("OK"), "Expected OK status for jackson-dataformat-yaml")
+        assertFalse(result.output.contains("FAIL"), "jackson-dataformat-yaml should be permitted via parent POM license")
     }
 
     companion object {

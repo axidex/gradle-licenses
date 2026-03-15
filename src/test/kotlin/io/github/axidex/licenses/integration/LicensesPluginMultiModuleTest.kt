@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LicensesPluginMultiModuleTest {
@@ -129,6 +130,50 @@ class LicensesPluginMultiModuleTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
         assertTrue(result.output.contains("IGNORED"))
+    }
+
+    @Test
+    fun `licensesCheck does not report own subprojects as unknown`() {
+        // Root project depends on its own subproject via project(":subproject").
+        // The subproject has no POM license. It must be excluded from the check.
+        projectDir.resolve("settings.gradle.kts").writeText(
+            """
+            rootProject.name = "test-project"
+            include("subproject")
+            """.trimIndent(),
+        )
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins {
+                java
+                id("io.github.axidex.licenses")
+            }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation(project(":subproject"))
+            }
+            """.trimIndent(),
+        )
+        val subprojectDir = projectDir.resolve("subproject").also { it.mkdirs() }
+        subprojectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins { java }
+            group = "test-project"
+            """.trimIndent(),
+        )
+        projectDir.resolve(".license-policy.yaml").writeText(
+            """
+            permit:
+              - Apache.*
+            ignore-packages:
+              - net.bytebuddy:byte-buddy
+            """.trimIndent(),
+        )
+
+        val result = runner("licensesCheck").build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
+        assertFalse(result.output.contains("subproject"), "Own subproject must not appear in license check output")
     }
 
     companion object {

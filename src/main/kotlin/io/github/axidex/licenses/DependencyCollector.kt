@@ -8,6 +8,8 @@ import org.gradle.api.Project
 internal object DependencyCollector {
 
     fun collect(project: Project): List<DependencyLicense> {
+        val ownCoordinates = project.allprojects.map { "${it.group}:${it.name}" }.toSet()
+
         val seen = mutableSetOf<String>()
         val uniqueIds = (sequenceOf(project) + project.subprojects.asSequence())
             .flatMap { it.configurations.asSequence() }
@@ -23,6 +25,7 @@ internal object DependencyCollector {
             .mapNotNull { artifact ->
                 val id = artifact.moduleVersion.id
                 val key = "${id.group}:${id.name}:${id.version}"
+                if ("${id.group}:${id.name}" in ownCoordinates) return@mapNotNull null
                 if (seen.add(key)) id else null
             }
             .toList()
