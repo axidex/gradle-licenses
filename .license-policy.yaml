@@ -1,9 +1,9 @@
 permit:
-  - BSD.*
-  - CC0.*
-  - MIT.*
-  - Apache.*
-  - MPL.*
+  - BSD
+  - CC0
+  - MIT
+  - Apache
+  - MPL
   - ISC
   - WTFPL
 
