@@ -10,7 +10,7 @@ Inspired by [go-bouncer](https://github.com/wagoodman/go-bouncer).
 // settings.gradle.kts
 pluginManagement {
     repositories {
-        gradlePluginPortal()
+        mavenCentral()
     }
 }
 ```
