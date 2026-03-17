@@ -7,6 +7,7 @@ plugins {
     id("com.akuleshov7.vercraft.plugin-gradle") version "0.6.0"
     id("com.vanniktech.maven.publish") version "0.30.0"
     id("me.champeau.jmh") version "0.7.3"
+    id("com.saveourtool.diktat") version "2.0.0"
 }
 
 group = "io.github.axidex"

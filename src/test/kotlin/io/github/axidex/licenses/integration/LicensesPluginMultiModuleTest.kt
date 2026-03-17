@@ -10,7 +10,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LicensesPluginMultiModuleTest {
-
     @TempDir
     lateinit var projectDir: File
 

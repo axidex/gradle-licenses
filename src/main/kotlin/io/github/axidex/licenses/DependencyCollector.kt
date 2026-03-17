@@ -6,11 +6,14 @@ import io.github.axidex.licenses.util.pmap
 import org.gradle.api.Project
 
 internal object DependencyCollector {
-
+    /**
+     * @param project
+     * @return list of all unique dependency licenses found across all configurations
+     */
     fun collect(project: Project): List<DependencyLicense> {
         val ownCoordinates = project.allprojects.map { "${it.group}:${it.name}" }.toSet()
 
-        val seen = mutableSetOf<String>()
+        val seen: MutableSet<String> = mutableSetOf()
         val uniqueIds = (sequenceOf(project) + project.subprojects.asSequence())
             .flatMap { it.configurations.asSequence() }
             .filter { it.isCanBeResolved }
@@ -25,7 +28,9 @@ internal object DependencyCollector {
             .mapNotNull { artifact ->
                 val id = artifact.moduleVersion.id
                 val key = "${id.group}:${id.name}:${id.version}"
-                if ("${id.group}:${id.name}" in ownCoordinates) return@mapNotNull null
+                if ("${id.group}:${id.name}" in ownCoordinates) {
+                    return@mapNotNull null
+                }
                 if (seen.add(key)) id else null
             }
             .toList()

@@ -4,6 +4,9 @@ import org.yaml.snakeyaml.Yaml
 import java.io.File
 
 object PolicyLoader {
+    /**
+     * @param file
+     */
     fun load(file: File): LicensesPolicy {
         val yaml = Yaml()
         @Suppress("UNCHECKED_CAST")

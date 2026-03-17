@@ -1,4 +1,4 @@
-package io.github.axidex.licenses.benchmark
+package io.github.axidex.jmh.kotlin.io.github.axidex.licenses.benchmark
 
 import io.github.axidex.licenses.util.pmap
 import org.openjdk.jmh.annotations.Benchmark
@@ -18,15 +18,25 @@ import java.util.concurrent.TimeUnit
 @Measurement(iterations = 5, time = 1)
 @Fork(2)
 @State(Scope.Benchmark)
+/** JMH benchmarks comparing sequential vs parallel collection mapping via [io.github.axidex.licenses.util.pmap]. */
 open class PmapBenchmark {
-
-    private val items = List(50) { it }
+    private val items = List(ITEM_COUNT) { it }
 
     @Benchmark
     fun sequential(): List<Int> =
-        items.map { Thread.sleep(10); it }
+        items.map {
+            Thread.sleep(10)
+            it
+        }
 
     @Benchmark
     fun parallel(): List<Int> =
-        items.pmap { Thread.sleep(10); it }
+        items.pmap {
+            Thread.sleep(10)
+            it
+        }
+
+    companion object {
+        private const val ITEM_COUNT = 50
+    }
 }
