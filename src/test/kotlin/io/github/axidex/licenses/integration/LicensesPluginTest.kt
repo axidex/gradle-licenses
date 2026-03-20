@@ -3,15 +3,16 @@ package io.github.axidex.licenses.integration
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.io.TempDir
+
 import java.io.File
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class LicensesPluginTest {
-
     @TempDir
     lateinit var projectDir: File
 
@@ -200,7 +201,7 @@ class LicensesPluginTest {
             }
             repositories { mavenCentral() }
             dependencies {
-                ${DEFAULT_DEPS}
+                $DEFAULT_DEPS
             }
             licenses {
                 configFile.set("config/my-policy.yaml")
@@ -227,7 +228,7 @@ class LicensesPluginTest {
     @Test
     fun `licensesList always succeeds and prints dependency table`() {
         setup(
-            policy = "", // licensesList doesn't read policy
+            policy = "",  // licensesList doesn't read policy
         )
 
         val result = runner("licensesList").build()
@@ -259,7 +260,8 @@ class LicensesPluginTest {
         val result = runner("licensesCheck").build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
-        assertFalse(result.output.contains("FAIL"), "jackson-dataformat-yaml should be permitted via parent POM license")
+        assertFalse(result.output.contains("FAIL"),
+            "jackson-dataformat-yaml should be permitted via parent POM license")
     }
 
     companion object {

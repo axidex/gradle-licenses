@@ -11,11 +11,14 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 
+/** Gradle task that checks dependency licenses against a policy file and fails on violations. */
 abstract class LicensesCheckTask : DefaultTask() {
-
     @get:InputFile
     abstract val policyFile: RegularFileProperty
 
+    /**
+     * @throws GradleException
+     */
     @TaskAction
     fun check() {
         val policy = PolicyLoader.load(policyFile.get().asFile)
@@ -28,16 +31,20 @@ abstract class LicensesCheckTask : DefaultTask() {
         if (failures.isNotEmpty()) {
             throw GradleException(
                 "License check failed: ${failures.count { it is CheckResult.Forbidden }} forbidden, " +
-                    "${failures.count { it is CheckResult.Unknown }} unknown. " +
-                    "Add to 'permit'/'forbid' or 'ignore-packages' in ${policyFile.get().asFile.name}",
+                        "${failures.count { it is CheckResult.Unknown }} unknown. " +
+                        "Add to 'permit'/'forbid' or 'ignore-packages' in ${policyFile.get().asFile.name}",
             )
         }
     }
 
     private fun evaluate(dep: DependencyLicense, policy: LicensesPolicy): CheckResult {
-        if (dep.coordinate in policy.ignorePackages) return CheckResult.Ignored(dep)
+        if (dep.coordinate in policy.ignorePackages) {
+            return CheckResult.Ignored(dep)
+        }
 
-        if (dep.licenses.isEmpty()) return CheckResult.Unknown(dep)
+        if (dep.licenses.isEmpty()) {
+            return CheckResult.Unknown(dep)
+        }
 
         val licenseNames = dep.licenses.map { it.name }
 
@@ -46,11 +53,13 @@ abstract class LicensesCheckTask : DefaultTask() {
                 val matched = licenseNames.firstNotNullOfOrNull { name ->
                     LicenseMatcher.firstMatch(name, policy.permit)
                 }
-                if (matched != null) CheckResult.Permitted(dep, matched) else CheckResult.Forbidden(dep)
+                matched?.let {
+                    CheckResult.Permitted(dep, matched)
+                } ?: CheckResult.Forbidden(dep)
             }
             LicensesPolicy.Mode.DENYLIST -> {
                 val forbidden = licenseNames.any { name ->
-                    LicenseMatcher.matches(name, policy.forbid)
+                    LicenseMatcher.isMatch(name, policy.forbid)
                 }
                 if (forbidden) CheckResult.Forbidden(dep) else CheckResult.Permitted(dep, "(not forbidden)")
             }
@@ -58,9 +67,9 @@ abstract class LicensesCheckTask : DefaultTask() {
     }
 
     private fun printReport(results: List<CheckResult>, policy: LicensesPolicy) {
-        val col1 = 65
-        val col2 = 45
-        val total = col1 + col2 + 12
+        val col1 = COL_PACKAGE
+        val col2 = COL_LICENSE
+        val total = col1 + col2 + COL_STATUS
 
         println()
         println("=".repeat(total))
@@ -75,27 +84,33 @@ abstract class LicensesCheckTask : DefaultTask() {
             val dep = result.dependency
             val licenseStr = dep.licenses.joinToString(", ") { it.name }.ifEmpty { "(none)" }
             val (status, label) = when (result) {
-                is CheckResult.Ignored   -> "IGNORED " to "(ignored)"
+                is CheckResult.Ignored -> "IGNORED " to "(ignored)"
                 is CheckResult.Forbidden -> "FAIL    " to licenseStr
-                is CheckResult.Unknown   -> "FAIL    " to "(no license info in POM)"
-                else                     -> continue
+                is CheckResult.Unknown -> "FAIL    " to "(no license info in POM)"
+                else -> continue
             }
             println("  ${dep.coordinateWithVersion.padEnd(col1)}${label.padEnd(col2)}$status")
         }
 
         println()
         val permitted = results.count { it is CheckResult.Permitted }
-        val ignored   = results.count { it is CheckResult.Ignored }
+        val ignored = results.count { it is CheckResult.Ignored }
         val forbidden = results.count { it is CheckResult.Forbidden }
-        val unknown   = results.count { it is CheckResult.Unknown }
+        val unknown = results.count { it is CheckResult.Unknown }
         println("  Summary: $permitted permitted, $ignored ignored, $forbidden forbidden, $unknown unknown")
         println()
     }
 
-    private fun statusOrder(r: CheckResult) = when (r) {
+    private fun statusOrder(result: CheckResult) = when (result) {
         is CheckResult.Forbidden -> 0
-        is CheckResult.Unknown   -> 1
+        is CheckResult.Unknown -> 1
         is CheckResult.Permitted -> 2
-        is CheckResult.Ignored   -> 3
+        is CheckResult.Ignored -> 3
+    }
+
+    companion object {
+        private const val COL_LICENSE = 45
+        private const val COL_PACKAGE = 65
+        private const val COL_STATUS = 12
     }
 }
