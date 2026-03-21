@@ -1,0 +1,84 @@
+name: 'Gradle License Check'
+description: 'Verify dependency license compliance in your Gradle project'
+
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  task:
+    description: 'Gradle task to run: licensesCheck or licensesList'
+    required: false
+    default: 'licensesCheck'
+  java-version:
+    description: 'Java version to use'
+    required: false
+    default: '21'
+  plugin-version:
+    description: 'Version of the gradle-licenses plugin to inject'
+    required: false
+    default: '0.3.0'
+  policy-file:
+    description: 'Path to the license policy YAML file (relative to project root)'
+    required: false
+    default: '.license-policy.yaml'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: temurin
+
+    - uses: gradle/actions/setup-gradle@v4
+
+    - name: Generate Gradle init script
+      shell: bash
+      run: |
+        PLUGIN_VERSION="${{ inputs.plugin-version }}"
+        POLICY_FILE="${{ inputs.policy-file }}"
+
+        # Validate plugin-version: digits and dots only
+        if ! [[ "$PLUGIN_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "Error: plugin-version must match x.y.z format, got: $PLUGIN_VERSION"
+          exit 1
+        fi
+
+        # Validate policy-file: allow alphanumeric, dots, dashes, underscores, slashes
+        if ! [[ "$POLICY_FILE" =~ ^[a-zA-Z0-9_./-]+$ ]]; then
+          echo "Error: policy-file contains invalid characters: $POLICY_FILE"
+          exit 1
+        fi
+
+        INIT_SCRIPT="/tmp/gradle-licenses-init.gradle"
+
+        if [ "$POLICY_FILE" = ".license-policy.yaml" ]; then
+          CONFIG_BLOCK=""
+        else
+          CONFIG_BLOCK="
+              root.extensions.configure(io.github.axidex.licenses.LicensesExtension) {
+                  configFile.set('${POLICY_FILE}')
+              }"
+        fi
+
+        cat > "$INIT_SCRIPT" <<GROOVY
+        initscript {
+            repositories { mavenCentral() }
+            dependencies {
+                classpath 'io.github.axidex:gradle-licenses:${PLUGIN_VERSION}'
+            }
+        }
+        gradle.projectsEvaluated {
+            def root = gradle.rootProject
+            if (!root.plugins.hasPlugin(io.github.axidex.licenses.LicensesPlugin)) {
+                root.apply plugin: io.github.axidex.licenses.LicensesPlugin${CONFIG_BLOCK}
+            }
+        }
+        GROOVY
+
+        echo "Init script written to $INIT_SCRIPT"
+
+    - name: Run ${{ inputs.task }}
+      shell: bash
+      run: ./gradlew ${{ inputs.task }} --init-script /tmp/gradle-licenses-init.gradle
