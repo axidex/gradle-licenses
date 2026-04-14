@@ -80,6 +80,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
+diktat {
+    reporters {
+        plain()
+    }
+}
+
 tasks.named<Zip>("jmhJar") {
     isZip64 = true
 }

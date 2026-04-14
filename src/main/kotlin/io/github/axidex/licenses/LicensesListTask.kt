@@ -2,8 +2,10 @@ package io.github.axidex.licenses
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 /** Gradle task that prints a table of all dependency licenses. */
+@DisableCachingByDefault(because = "License listing resolves dependencies and fetches POM files at execution time")
 abstract class LicensesListTask : DefaultTask() {
     @TaskAction
     fun list() {
