@@ -12,6 +12,8 @@ jobs:
   central_release:
     name: Publish to Maven Central
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,6 +26,12 @@ jobs:
           distribution: temurin
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - name: Get version from vercraft
+        id: version
+        run: |
+          VERSION=$(./gradlew -q properties --console=plain 2>/dev/null | grep "^version:" | awk '{print $2}')
+          echo "version=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Git status before
         run: git status
@@ -46,15 +54,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract version from branch name
-        id: version
-        run: echo "version=v${GITHUB_REF#refs/heads/release/}" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ needs.central_release.outputs.version }}
+          name: ${{ needs.central_release.outputs.version }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
