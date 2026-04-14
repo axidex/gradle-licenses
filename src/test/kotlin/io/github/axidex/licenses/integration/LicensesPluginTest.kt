@@ -264,6 +264,52 @@ class LicensesPluginTest {
             "jackson-dataformat-yaml should be permitted via parent POM license")
     }
 
+    // -------------------------------------------------------------------------
+    // Regression: ConcurrentModificationException
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `licensesCheck does not throw ConcurrentModificationException when configuration is added during resolution`() {
+        // Regression: DependencyCollector iterated project.configurations as a lazy sequence.
+        // The beforeResolve hook fires synchronously inside resolvedArtifacts, adding a new
+        // configuration to the live container while the sequence iterator is still active
+        // -> ConcurrentModificationException on the next iterator.next() call.
+        // Fixed by snapshotting configurations with toList() before the sequence is consumed.
+        projectDir.resolve("settings.gradle.kts")
+            .writeText("""rootProject.name = "test-project"""")
+        projectDir.resolve("build.gradle.kts").writeText(
+            """
+            plugins {
+                java
+                id("io.github.axidex.gradle-licenses")
+            }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
+            }
+            configurations.getByName("runtimeClasspath").incoming.beforeResolve {
+                configurations.create("added-during-resolution") {
+                    isCanBeResolved = false
+                }
+            }
+            """.trimIndent(),
+        )
+        projectDir.resolve(".license-policy.yaml").writeText(
+            """
+            permit:
+              - Apache.*
+              - MIT.*
+              - BSD.*
+            ignore-packages:
+              - net.bytebuddy:byte-buddy
+            """.trimIndent(),
+        )
+
+        val result = runner("licensesCheck").build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":licensesCheck")?.outcome)
+    }
+
     companion object {
         private const val DEFAULT_DEPS =
             """implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")"""

@@ -5,15 +5,21 @@ import io.github.axidex.licenses.config.PolicyLoader
 import io.github.axidex.licenses.model.CheckResult
 import io.github.axidex.licenses.model.DependencyLicense
 import io.github.axidex.licenses.resolver.LicenseMatcher
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
 /** Gradle task that checks dependency licenses against a policy file and fails on violations. */
+@DisableCachingByDefault(because = "License checking resolves dependencies and fetches POM files at execution time")
 abstract class LicensesCheckTask : DefaultTask() {
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val policyFile: RegularFileProperty
 
     /**
