@@ -15,7 +15,7 @@ internal object DependencyCollector {
 
         val seen: MutableSet<String> = mutableSetOf()
         val uniqueIds = (sequenceOf(project) + project.subprojects.asSequence())
-            .flatMap { it.configurations.asSequence() }
+            .flatMap { it.configurations.toList().asSequence() }
             .filter { it.isCanBeResolved }
             .flatMap { config ->
                 try {
