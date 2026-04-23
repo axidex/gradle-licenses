@@ -4,6 +4,55 @@ A Gradle plugin for dependency license compliance checking. Scans all resolved d
 
 Inspired by [go-bouncer](https://github.com/wagoodman/go-bouncer).
 
+## GitHub Action
+
+Add license checking to your CI with a single step — no changes to `build.gradle.kts` required:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: axidex/gradle-licenses@v1
+```
+
+The action sets up Java and Gradle automatically, then injects the plugin via a Gradle init script. Your build files stay untouched.
+
+### Inputs
+
+| Input            | Default                | Description                                    |
+|------------------|------------------------|------------------------------------------------|
+| `task`           | `licensesCheck`        | Gradle task: `licensesCheck` or `licensesList` |
+| `java-version`   | `21`                   | Java version                                   |
+| `plugin-version` | `0.3.0`                | Plugin version from Maven Central              |
+| `policy-file`    | `.license-policy.yaml` | Path to policy YAML (relative to project root) |
+
+### Examples
+
+**Basic — check licenses against `.license-policy.yaml`:**
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: axidex/gradle-licenses@v1
+```
+
+**List all dependencies with their licenses:**
+
+```yaml
+- uses: axidex/gradle-licenses@v1
+  with:
+    task: licensesList
+```
+
+**Custom policy file path:**
+
+```yaml
+- uses: axidex/gradle-licenses@v1
+  with:
+    policy-file: config/license-policy.yaml
+```
+
+If the plugin is already applied in your `build.gradle.kts`, the action detects this and skips the injection — no duplicate plugin errors.
+
 ## Installation
 
 ```kotlin
